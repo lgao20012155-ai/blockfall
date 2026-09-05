@@ -815,7 +815,9 @@ const wctx = el.winCanvas.getContext('2d');
 function show(node, on) { node.classList.toggle('show', !!on); }
 function hideAll() { [el.ovTitle, el.ovLevel, el.ovPause, el.ovOver].forEach(n => show(n, false)); }
 
+let _hudScore = -1;
 function updateHUD() {
+  _hudScore = G.score;
   el.score.textContent = G.score.toLocaleString();
   el.level.innerHTML = (G.level + 1) + '<span style="color:var(--dim);font-size:12px"> / 10</span>';
   const goal = LEVELS[G.level].goal;
@@ -1294,6 +1296,8 @@ function frame(now) {
     G.winTime += dt;
     drawVictory(G.winTime);
   }
+
+  if (G.score !== _hudScore) updateHUD();   // soft/hard-drop points land immediately
 
   if (G.state !== State.WIN) drawBoard(dt);
   drawSidePanels();
