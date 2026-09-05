@@ -4,12 +4,12 @@ A retro falling-block puzzle game. One self-contained HTML file — no build ste
 dependencies, no server required.
 
 - 10 levels, each with its own line goal, gravity speed and junk-row handicap
-- Arrow-key controls (↑ rotate, ←→ move, ↓ soft drop) plus an on-screen D-pad
+- Keyboard arrow keys (↑ rotate, ←→ move, ↓ soft drop) — physical keys, no on-screen buttons
 - Proper SRS rotation with wall kicks, 7-bag randomiser, lock delay, ghost piece, hold
 - CRT/scanline retro presentation and a WebAudio chiptune soundtrack (no audio files)
 - Beat all ten levels and the dancers come out
 
-## Run it
+## Run it locally
 
 Double-click `index.html`, or:
 
@@ -20,6 +20,20 @@ python3 -m http.server 8000     # then visit http://localhost:8000
 
 The plain `open` route works fine — everything is inline. Use the local server if you
 later add fetches, modules, or anything else that needs a real origin.
+
+## Deploying
+
+The repo carries config for both hosts. It's a static site either way — there is nothing
+to build, so the build command is a no-op and the publish directory is the repo root.
+
+**Render** (`render.yaml`) — the blueprint is picked up automatically. Point a new Static
+Site at this repo, or use the Blueprint flow, and it deploys on push to `main`.
+
+**Vercel** (`vercel.json`) — import the repo, accept the defaults (framework: Other, no
+build command, output directory: `.`).
+
+Both configs set `nosniff`, `SAMEORIGIN` and a sane referrer policy, and rewrite all
+paths to `index.html`.
 
 ## Where things live
 
@@ -35,7 +49,7 @@ Everything is in `index.html`, split into numbered sections:
 | 8. DOM/HUD | Element lookups and HUD updates |
 | 9. RENDER | Board, pieces, ghost, particles, next/hold panels |
 | 10. VICTORY | The pixel dancer scene, drawn low-res and scaled 2× |
-| 11. INPUT | Keyboard, auto-repeat (DAS/ARR), on-screen D-pad |
+| 11. INPUT | Keyboard handling and auto-repeat (DAS/ARR) |
 | 12. LOOP | The `requestAnimationFrame` loop |
 
 ## Tuning difficulty

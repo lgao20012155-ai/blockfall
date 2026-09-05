@@ -34,6 +34,13 @@ no `node_modules` needed to run it.
   exact 2× integer scale. **Keep that ratio** — any other size makes the pixel art blurry
   or stretched. `drawDancer()` is procedural; all its primitives snap to whole pixels.
 
+## Deployment
+
+Static site on Render, deployed from `main` via `render.yaml` (blueprint at the repo root).
+`vercel.json` is kept in sync as an alternate host. There is **no build step** on either —
+`index.html` is served straight from the repo root. If you add a bundler, both configs and
+this note need updating together.
+
 ## Testing
 
 `node verify.js` runs the whole suite headlessly (rotation, kicks, line clears, scoring,
@@ -43,5 +50,5 @@ level progression) and writes `shot-*.png`. Run it after any gameplay change. It
 ## Things I'd like help with eventually
 
 - Wiring a high-score table to Supabase (I use Flask + Supabase on my other projects)
-- Serving it from a small Flask app so it can go on Render
-- Mobile layout polish (the D-pad works, the surrounding layout is desktop-first)
+- Custom domain on the Render static site
+- Mobile support — deliberately keyboard-only right now, so phones need a rethink
