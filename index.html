@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>BLOCKFALL — 10 Levels</title>
+<meta name="description" content="A retro falling-block puzzle game. Ten levels, arrow-key controls, chiptune soundtrack. Clear them all and the dancers come out.">
+<meta name="theme-color" content="#07070f">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BLOCKFALL">
+<meta property="og:description" content="A retro falling-block puzzle game. Ten levels, arrow keys, chiptune soundtrack.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2307070f'/%3E%3Crect x='2' y='3' width='4' height='4' fill='%2300e5e5'/%3E%3Crect x='6' y='3' width='4' height='4' fill='%2300e5e5'/%3E%3Crect x='10' y='3' width='4' height='4' fill='%2300e5e5'/%3E%3Crect x='6' y='7' width='4' height='4' fill='%23a12ee0'/%3E%3Crect x='2' y='11' width='4' height='4' fill='%23e5d600'/%3E%3Crect x='6' y='11' width='4' height='4' fill='%23e5d600'/%3E%3C/svg%3E">
 <style>
 /* ============================================================
    BLOCKFALL — retro falling-block puzzle game
@@ -105,25 +111,6 @@ canvas.mini{ display:block; image-rendering:pixelated; margin:0 auto; }
 .keys{ font-size:10px; color:var(--dim); line-height:1.9; }
 .keys b{ color:var(--ink); }
 
-/* --- on-screen d-pad ------------------------------------------ */
-#pad{
-  margin-top:12px;
-  display:grid; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(2,52px);
-  gap:6px; justify-content:center;
-}
-.btn{
-  background:var(--panel); border:3px solid var(--edge);
-  color:var(--accent); font-size:22px; line-height:1;
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; touch-action:none;
-  box-shadow:0 4px 0 #000;
-}
-.btn:active,.btn.on{ background:var(--accent); color:#05050c; transform:translateY(3px); box-shadow:0 1px 0 #000; }
-#bUp{ grid-column:2; grid-row:1; }
-#bLeft{ grid-column:1; grid-row:2; }
-#bDown{ grid-column:2; grid-row:2; }
-#bRight{ grid-column:3; grid-row:2; }
-
 /* --- overlays ------------------------------------------------- */
 .overlay{
   position:absolute; inset:0; z-index:20;
@@ -172,7 +159,7 @@ canvas.mini{ display:block; image-rendering:pixelated; margin:0 auto; }
         <canvas id="holdCv" class="mini" width="112" height="76"></canvas>
       </div>
       <div class="panel">
-        <div class="label">Controls</div>
+        <div class="label">Keyboard</div>
         <div class="keys">
           <b>&uarr;</b> rotate<br>
           <b>&larr; &rarr;</b> move<br>
@@ -199,6 +186,7 @@ canvas.mini{ display:block; image-rendering:pixelated; margin:0 auto; }
         <h1>BLOCKFALL</h1>
         <h2>10 Levels</h2>
         <p>
+          USE THE ARROW KEYS ON YOUR KEYBOARD<br>
           &uarr; ROTATE &nbsp;&middot;&nbsp; &larr;&rarr; MOVE &nbsp;&middot;&nbsp; &darr; DROP<br>
           CLEAR THE LINE GOAL TO ADVANCE<br>
           SURVIVE ALL TEN AND THEY DANCE
@@ -250,11 +238,6 @@ canvas.mini{ display:block; image-rendering:pixelated; margin:0 auto; }
         <div class="label">Best</div>
         <div class="value small" id="best">0</div>
       </div>
-      <div id="pad">
-        <div class="btn" id="bUp">&#9650;</div>
-        <div class="btn" id="bLeft">&#9664;</div>
-        <div class="btn" id="bDown">&#9660;</div>
-        <div class="btn" id="bRight">&#9654;</div>
       </div>
     </div>
 
@@ -819,7 +802,7 @@ const el = {};
 for (const id of ['game','winCanvas','winText','winSub','winFoot','holdCv','nextCv',
                   'score','level','lines','best','barInner','muteTag',
                   'ovTitle','ovLevel','ovPause','ovOver','lvTitle','lvSub','lvInfo','goStats',
-                  'stage','bUp','bDown','bLeft','bRight']) {
+                  'stage']) {
   el[id] = document.getElementById(id);
 }
 
@@ -1241,28 +1224,6 @@ window.addEventListener('keyup', (e) => {
   if (e.code === 'ArrowRight') held.right = false;
   if (e.code === 'ArrowDown')  held.down = false;
 });
-
-// --- on-screen d-pad (mouse + touch) -------------------------------
-function bindPad(node, onDown, onUp) {
-  const down = (e) => {
-    e.preventDefault();
-    Sound.init();
-    node.classList.add('on');
-    if (G.state === State.TITLE) { newGame(); return; }
-    if (G.state === State.OVER)  { newGame(); return; }
-    if (G.state === State.WIN)   { Sound.stop(); newGame(); return; }
-    onDown();
-  };
-  const up = (e) => { e.preventDefault(); node.classList.remove('on'); if (onUp) onUp(); };
-  node.addEventListener('pointerdown', down);
-  node.addEventListener('pointerup', up);
-  node.addEventListener('pointercancel', up);
-  node.addEventListener('pointerleave', up);
-}
-bindPad(el.bUp,    () => pressUp());
-bindPad(el.bLeft,  () => { held.left = true;  repeat.left = -DAS;  pressLeft(); },  () => held.left = false);
-bindPad(el.bRight, () => { held.right = true; repeat.right = -DAS; pressRight(); }, () => held.right = false);
-bindPad(el.bDown,  () => { held.down = true;  pressDown(); },                       () => held.down = false);
 
 /* ==================================================================
    12. MAIN LOOP
