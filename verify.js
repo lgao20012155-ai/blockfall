@@ -143,6 +143,46 @@ const path = require('path');
   });
   console.log('levels:', levels.join(' | '));
 
+
+  // --- music: one tune per level, original theme last -----------------
+  const music = await page.evaluate(async () => {
+    const B = window.BLOCKFALL;
+    const out = { tracks: B.TRACKS.map(t => t.name), perLevel: [], issues: [] };
+
+    // every track must be distinct and non-empty
+    const names = new Set(out.tracks);
+    if (names.size !== B.TRACKS.length) out.issues.push('duplicate track names');
+    if (B.TRACKS.length !== B.LEVELS.length) out.issues.push('track count != level count');
+    B.TRACKS.forEach((t, i) => {
+      if (!t.melody || t.melody.length < 8) out.issues.push(`track ${i} too short`);
+      if (!t.bass || !t.bass.length) out.issues.push(`track ${i} has no bass`);
+      const bad = t.melody.filter(([n, d]) => (n !== null && !/^[A-G]#?-?\d$/.test(n)) || !(d > 0));
+      if (bad.length) out.issues.push(`track ${i} bad notes: ${JSON.stringify(bad.slice(0,2))}`);
+      // bars should divide evenly into the melody length
+      const total = t.melody.reduce((a, [, d]) => a + d, 0);
+      if (Math.abs(total % (t.bar || 4)) > 1e-6) out.issues.push(`track ${i} (${t.name}) is ${total} beats, not a whole number of ${t.bar}-beat bars`);
+    });
+
+    // starting each level must select that level's track
+    for (let i = 0; i < B.LEVELS.length; i++) {
+      B.startLevel(i);
+      out.perLevel.push({ lvl: i + 1, track: B.Sound.track.name, idx: B.Sound.trackIdx, bpm: B.LEVELS[i].tempo });
+      if (B.Sound.trackIdx !== i) out.issues.push(`level ${i+1} selected track ${B.Sound.trackIdx}`);
+    }
+
+    // victory replays the last track, faster than level 10
+    B.victory();
+    out.victory = { track: B.Sound.track.name, bpm: B.Sound.tempo };
+    if (B.Sound.trackIdx !== B.TRACKS.length - 1) out.issues.push('victory is not on the final track');
+    if (B.Sound.tempo <= B.LEVELS[9].tempo) out.issues.push('victory tempo not faster than level 10');
+    return out;
+  });
+  console.log('tracks:', music.tracks.join(' | '));
+  console.log('per level:');
+  for (const r of music.perLevel) console.log(`   L${String(r.lvl).padStart(2)}  ${r.track.padEnd(15)} ${r.bpm} bpm`);
+  console.log('victory:', JSON.stringify(music.victory));
+  console.log(music.issues.length ? 'MUSIC ISSUES:\n  ' + music.issues.join('\n  ') : 'music: no issues');
+
   // victory scene
   await page.evaluate(() => { window.BLOCKFALL.G.score = 48200; window.BLOCKFALL.victory(); });
   await page.waitForTimeout(1400);

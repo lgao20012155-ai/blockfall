@@ -6,7 +6,7 @@ dependencies, no server required.
 - 10 levels, each with its own line goal, gravity speed and junk-row handicap
 - Keyboard arrow keys (↑ rotate, ←→ move, ↓ soft drop) — physical keys, no on-screen buttons
 - Proper SRS rotation with wall kicks, 7-bag randomiser, lock delay, ghost piece, hold
-- CRT/scanline retro presentation and a WebAudio chiptune soundtrack (no audio files)
+- A different chiptune track on every level, all synthesised — no audio files
 - Beat all ten levels and the dancers come out
 
 ## Run it locally
@@ -43,7 +43,7 @@ Everything is in `index.html`, split into numbered sections:
 | --- | --- |
 | 1. CONFIG | Board size, the `LEVELS` table, timing constants, colours |
 | 2. PIECES | Tetromino shapes and the SRS wall-kick tables |
-| 3. AUDIO | Chiptune synth, SFX, the looping music scheduler |
+| 3. AUDIO | Chiptune synth, SFX, the `TRACKS` table, the looping music scheduler |
 | 4. STATE | The `G` game-state object |
 | 5–7. LOGIC | Collision, movement, rotation, locking, line clears, level flow |
 | 8. DOM/HUD | Element lookups and HUD updates |
@@ -67,6 +67,31 @@ const LEVELS = [
 - `gravity` — milliseconds per automatic 1-cell drop (lower = faster)
 - `garbage` — junk rows the level starts with
 - `tempo` — music BPM for that level
+
+## The soundtrack
+
+Every level has its own tune, defined in the `TRACKS` array next to `LEVELS`. The ramp
+runs calm to frantic, with the original theme held back for level 10 and replayed faster
+still over the victory screen.
+
+| Level | Track | Source |
+| --- | --- | --- |
+| 1 | First Light | original |
+| 2 | Minuet | Petzold, c.1725 — public domain |
+| 3 | Elise | Beethoven, 1810 — public domain |
+| 4 | Troika | original |
+| 5 | Mountain King | Grieg, 1875 — public domain |
+| 6 | Rondo | Mozart, 1783 — public domain |
+| 7 | Galop | original |
+| 8 | Ochi | original |
+| 9 | Tell | Rossini, 1829 — public domain |
+| 10 | Korobeiniki | Russian folk, 1861 — public domain |
+
+Each entry is `{ name, bar, wave, bassWave, bass, melody }`. `melody` is `[note, beats]`
+pairs; a `null` note is a rest. `bar` is beats per bar — 3 for the waltz-time pieces —
+and the bass cycles one root per bar. Keep `wave` and `bassWave` different or the melody
+disappears into its own bassline. `verify.js` checks every track's beats divide evenly
+into whole bars and that each one actually emits notes.
 
 Change numbers, reload, done. Add or remove entries and the "/ 10" HUD label follows —
 just update the two places that say `10` if you change the level count.

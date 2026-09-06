@@ -260,18 +260,18 @@ const CELL = 30;          // pixel size of one cell on the main canvas
 //   goal    : lines you must clear to finish the level
 //   gravity : ms per automatic 1-cell drop (lower = faster)
 //   garbage : rows of pre-filled junk the level starts with
-//   tempo   : music BPM
+//   tempo   : music BPM (the tune itself comes from TRACKS, below)
 const LEVELS = [
-  { goal: 5,  gravity: 800, garbage: 0, tempo: 120 },
+  { goal: 5,  gravity: 800, garbage: 0, tempo: 112 },
   { goal: 6,  gravity: 700, garbage: 0, tempo: 126 },
   { goal: 7,  gravity: 590, garbage: 0, tempo: 132 },
-  { goal: 8,  gravity: 480, garbage: 1, tempo: 138 },
-  { goal: 8,  gravity: 380, garbage: 1, tempo: 144 },
-  { goal: 9,  gravity: 300, garbage: 2, tempo: 150 },
-  { goal: 9,  gravity: 235, garbage: 2, tempo: 158 },
-  { goal: 10, gravity: 180, garbage: 3, tempo: 166 },
-  { goal: 10, gravity: 135, garbage: 4, tempo: 176 },
-  { goal: 12, gravity:  95, garbage: 4, tempo: 190 },
+  { goal: 8,  gravity: 480, garbage: 1, tempo: 140 },
+  { goal: 8,  gravity: 380, garbage: 1, tempo: 148 },
+  { goal: 9,  gravity: 300, garbage: 2, tempo: 156 },
+  { goal: 9,  gravity: 235, garbage: 2, tempo: 166 },
+  { goal: 10, gravity: 180, garbage: 3, tempo: 174 },
+  { goal: 10, gravity: 135, garbage: 4, tempo: 186 },
+  { goal: 12, gravity:  95, garbage: 4, tempo: 205 },
 ];
 
 const DAS = 150;          // ms before auto-repeat kicks in on left/right
@@ -355,23 +355,116 @@ function freqOf(note) {
   return 440 * Math.pow(2, (midi - 69) / 12);
 }
 
-// Korobeiniki (Russian folk tune, 1861 — public domain), theme A.
-// [note, beats]
-const MELODY = [
-  ['E5',1],['B4',.5],['C5',.5],['D5',1],['C5',.5],['B4',.5],
-  ['A4',1],['A4',.5],['C5',.5],['E5',1],['D5',.5],['C5',.5],
-  ['B4',1.5],['C5',.5],['D5',1],['E5',1],
-  ['C5',1],['A4',1],['A4',1],[null,1],
-  ['D5',1.5],['F5',.5],['A5',1],['G5',.5],['F5',.5],
-  ['E5',1.5],['C5',.5],['E5',1],['D5',.5],['C5',.5],
-  ['B4',1],['B4',.5],['C5',.5],['D5',1],['E5',1],
-  ['C5',1],['A4',1],['A4',1],[null,1],
+// ------------------------------------------------------------------
+// One tune per level. Everything here is either public domain or
+// written for this game, so it can ship anywhere.
+//
+//   melody : [note, beats]  — null note = rest
+//   bass   : one root per bar, cycled
+//   bar    : beats per bar (3 for the waltz-time pieces)
+//   wave   : lead oscillator
+//   bassWave : bass oscillator (default triangle) — must differ from `wave`
+//              or the melody gets lost inside its own bassline
+//
+// The order is a deliberate ramp: calm, then busier, then frantic —
+// with the original theme held back for level 10.
+// ------------------------------------------------------------------
+const TRACKS = [
+
+  // 1 — "First Light". Original. Unhurried, nothing at stake yet.
+  { name: 'First Light', bar: 4, wave: 'triangle', bassWave: 'sine', bass: ['C2','F2','G2','C2'], melody: [
+    ['E4',1],['G4',1],['C5',1],['B4',.5],['G4',.5],
+    ['A4',1],['F4',1],['G4',2],
+    ['D4',1],['F4',1],['A4',1],['G4',.5],['E4',.5],
+    ['C4',1],['E4',1],['G4',2],
+  ]},
+
+  // 2 — Minuet in G (Petzold, c.1725 — public domain). 3/4, politely brisk.
+  { name: 'Minuet', bar: 3, wave: 'square', bass: ['G2','D2','G2','D2','C2','G2','D2','G2'], melody: [
+    ['D5',1],['G4',.5],['A4',.5],['B4',.5],['C5',.5],
+    ['D5',1],['G4',1],['G4',1],
+    ['E5',1],['C5',.5],['D5',.5],['E5',.5],['F#5',.5],
+    ['G5',1],['G4',1],['G4',1],
+    ['C5',1],['D5',.5],['C5',.5],['B4',.5],['A4',.5],
+    ['B4',1],['C5',.5],['B4',.5],['A4',.5],['G4',.5],
+    ['F#4',1],['G4',.5],['A4',.5],['B4',.5],['G4',.5],
+    ['A4',2],['G4',1],
+  ]},
+
+  // 3 — Für Elise (Beethoven, 1810 — public domain). That restless two-note turn.
+  { name: 'Elise', bar: 4, wave: 'square', bass: ['A2','E2','A2','A2'], melody: [
+    ['E5',.5],['D#5',.5],['E5',.5],['D#5',.5],['E5',.5],['B4',.5],['D5',.5],['C5',.5],
+    ['A4',1],['C4',.5],['E4',.5],['A4',1],['B4',1],
+    ['E4',.5],['G#4',.5],['B4',.5],['C5',1],['E4',.5],['E5',.5],['D#5',.5],
+    ['E5',.5],['D#5',.5],['E5',.5],['B4',.5],['D5',.5],['C5',.5],['A4',1],
+  ]},
+
+  // 4 — "Troika". Original, written in a Slavic folk mode to sit beside the theme.
+  { name: 'Troika', bar: 4, wave: 'square', bass: ['A2','E2','A2','E2'], melody: [
+    ['A4',.5],['B4',.5],['C5',.5],['B4',.5],['A4',.5],['G#4',.5],['A4',1],
+    ['E5',.5],['D5',.5],['C5',.5],['B4',.5],['A4',1],['E4',1],
+    ['A4',.5],['C5',.5],['E5',.5],['C5',.5],['A4',.5],['B4',.5],['C5',1],
+    ['B4',.5],['A4',.5],['G#4',.5],['B4',.5],['A4',2],
+  ]},
+
+  // 5 — In the Hall of the Mountain King (Grieg, 1875 — public domain).
+  //     A stalking ostinato; the point where the game stops being polite.
+  { name: 'Mountain King', bar: 4, wave: 'square', bass: ['B2','B2','B2','B2'], melody: [
+    ['B3',.5],['C#4',.5],['D4',.5],['E4',.5],['F#4',.5],['D4',.5],['F#4',1],
+    ['F4',.5],['C#4',.5],['F4',1],['E4',.5],['C4',.5],['E4',1],
+    ['B3',.5],['C#4',.5],['D4',.5],['E4',.5],['F#4',.5],['D4',.5],['F#4',.5],['B4',.5],
+    ['A4',.5],['F#4',.5],['D4',.5],['F#4',.5],['A4',2],
+  ]},
+
+  // 6 — Rondo alla Turca (Mozart, 1783 — public domain). Rattling and mechanical.
+  { name: 'Rondo', bar: 4, wave: 'square', bass: ['A2','A2','E2','A2'], melody: [
+    ['B4',.5],['A4',.5],['G#4',.5],['A4',.5],['C5',1],['A4',1],
+    ['D5',.5],['C5',.5],['B4',.5],['C5',.5],['E5',1],['C5',1],
+    ['F5',.5],['E5',.5],['D#5',.5],['E5',.5],['B5',.5],['A5',.5],['G#5',.5],['A5',.5],
+    ['B5',.5],['A5',.5],['G#5',.5],['A5',.5],['C6',2],
+  ]},
+
+  // 7 — "Galop". Original. Relentless arpeggios, no room to think.
+  { name: 'Galop', bar: 4, wave: 'square', bass: ['C2','G2','C2','G2'], melody: [
+    ['C5',.5],['E5',.5],['G5',.5],['E5',.5],['C5',.5],['E5',.5],['G5',1],
+    ['F5',.5],['A5',.5],['F5',.5],['D5',.5],['G5',.5],['B4',.5],['C5',1],
+    ['C5',.5],['E5',.5],['G5',.5],['E5',.5],['C5',.5],['E5',.5],['G5',1],
+    ['A5',.5],['G5',.5],['F5',.5],['E5',.5],['D5',.5],['C5',.5],['G4',1],
+  ]},
+
+  // 8 — "Ochi". Original, in the dramatic minor of the old Romani ballads.
+  { name: 'Ochi', bar: 4, wave: 'sawtooth', bass: ['D2','A2','D2','A2'], melody: [
+    ['D5',1],['F5',.5],['E5',.5],['D5',1],['A4',1],
+    ['A4',.5],['C5',.5],['E5',.5],['D5',.5],['C5',1],['A4',1],
+    ['D5',1],['F5',.5],['A5',.5],['G5',1],['F5',1],
+    ['E5',.5],['D5',.5],['C#5',.5],['E5',.5],['D5',2],
+  ]},
+
+  // 9 — William Tell galop (Rossini, 1829 — public domain). Full sprint.
+  { name: 'Tell', bar: 4, wave: 'square', bass: ['C2','C2','G2','C2'], melody: [
+    ['G4',.5],['G4',.5],['G4',1],['G4',.5],['G4',.5],['G4',1],
+    ['G4',.5],['G4',.5],['C5',.5],['E5',.5],['G5',1],['E5',.5],['G5',.5],
+    ['E5',.5],['G5',.5],['C6',1],['G5',.5],['E5',.5],['C5',1],
+    ['D5',.5],['E5',.5],['F5',.5],['G5',.5],['E5',.5],['C5',.5],['G4',1],
+  ]},
+
+  // 10 — Korobeiniki (Russian folk, 1861 — public domain). The one everyone
+  //      knows, held back until the last level and played flat out.
+  { name: 'Korobeiniki', bar: 4, wave: 'square', bass: ['E2','A2','G#2','A2','D2','C2','E2','A2'], melody: [
+    ['E5',1],['B4',.5],['C5',.5],['D5',1],['C5',.5],['B4',.5],
+    ['A4',1],['A4',.5],['C5',.5],['E5',1],['D5',.5],['C5',.5],
+    ['B4',1.5],['C5',.5],['D5',1],['E5',1],
+    ['C5',1],['A4',1],['A4',1],[null,1],
+    ['D5',1.5],['F5',.5],['A5',1],['G5',.5],['F5',.5],
+    ['E5',1.5],['C5',.5],['E5',1],['D5',.5],['C5',.5],
+    ['B4',1],['B4',.5],['C5',.5],['D5',1],['E5',1],
+    ['C5',1],['A4',1],['A4',1],[null,1],
+  ]},
 ];
-const BASS_ROOTS = ['E2','A2','G#2','A2','D2','C2','E2','A2'];
 
 const Sound = {
   ctx: null, master: null, musicGain: null, sfxGain: null,
-  muted: false, playing: false, tempo: 120,
+  muted: false, playing: false, tempo: 120, trackIdx: 0,
   _nextTime: 0, _idx: 0, _beat: 0, _timer: null,
 
   init() {
@@ -438,16 +531,25 @@ const Sound = {
   sOver()   { this.sfx([['C5',.14],['A4',.14],['F4',.14],['D4',.18],['B3',.30]], 'sawtooth', .40); },
 
   // --- looping music -----------------------------------------------
-  start(tempo) {
+  start(tempo, track) {
     this.init(); if (!this.ctx) return;
     this.resume();
     this.tempo = tempo || 120;
+    if (track !== undefined) this.trackIdx = Math.max(0, Math.min(TRACKS.length - 1, track | 0));
     if (this.playing) return;
     this.playing = true;
     this._idx = 0; this._beat = 0;
     this._nextTime = this.ctx.currentTime + 0.08;
     this._timer = setInterval(() => this._schedule(), 40);
   },
+
+  // Switch tunes. Rewinds to the top of the new one so a level always
+  // starts on its downbeat rather than mid-phrase.
+  setTrack(i) {
+    this.trackIdx = Math.max(0, Math.min(TRACKS.length - 1, i | 0));
+    this._idx = 0; this._beat = 0;
+  },
+  get track() { return TRACKS[this.trackIdx] || TRACKS[0]; },
   stop() {
     this.playing = false;
     if (this._timer) { clearInterval(this._timer); this._timer = null; }
@@ -458,23 +560,24 @@ const Sound = {
     if (!this.ctx || !this.playing) return;
     const spb = 60 / this.tempo;                      // seconds per beat
     while (this._nextTime < this.ctx.currentTime + 0.25) {
-      const [note, beats] = MELODY[this._idx];
+      const T = this.track;
+      const [note, beats] = T.melody[this._idx];
       const dur = beats * spb;
-      if (note) this.tone(freqOf(note), this._nextTime, dur * 0.92, 'square', this.musicGain, 0.55);
+      if (note) this.tone(freqOf(note), this._nextTime, dur * 0.92, T.wave || 'square', this.musicGain, 0.55);
 
       // bass: eighth notes on the bar root
-      const bar = Math.floor(this._beat / 4) % BASS_ROOTS.length;
-      const root = freqOf(BASS_ROOTS[bar]);
+      const bar = Math.floor(this._beat / (T.bar || 4)) % T.bass.length;
+      const root = freqOf(T.bass[bar]);
       let b = 0;
       while (b < beats) {
         const step = Math.min(0.5, beats - b);
-        this.tone(root, this._nextTime + b * spb, step * spb * 0.8, 'triangle', this.musicGain, 0.5);
+        this.tone(root, this._nextTime + b * spb, step * spb * 0.8, T.bassWave || 'triangle', this.musicGain, 0.5);
         b += 0.5;
       }
 
       this._nextTime += dur;
       this._beat += beats;
-      this._idx = (this._idx + 1) % MELODY.length;
+      this._idx = (this._idx + 1) % T.melody.length;
       if (this._idx === 0) this._beat = 0;
     }
   },
@@ -734,7 +837,11 @@ function startLevel(idx) {
   G.bag = []; G.queue = [];
   fillQueue();
   addGarbage(LEVELS[idx].garbage);
+  // each level gets its own tune, restarted from the top
+  Sound.stop();
+  Sound.setTrack(idx);
   Sound.setTempo(LEVELS[idx].tempo);
+  Sound.start(LEVELS[idx].tempo, idx);
   G.state = State.PLAY;
   spawn();
   updateHUD();
@@ -768,8 +875,9 @@ function victory() {
   G.winTime = 0;
   if (G.score > G.best) { G.best = G.score; saveBest(G.best); }
   Sound.stop();
-  Sound.setTempo(200);
-  setTimeout(() => { if (G.state === State.WIN) Sound.start(200); }, 350);
+  Sound.setTrack(TRACKS.length - 1);        // the theme, one more time
+  Sound.setTempo(215);
+  setTimeout(() => { if (G.state === State.WIN) Sound.start(215, TRACKS.length - 1); }, 350);
   el.winSub.innerHTML = 'ALL 10 LEVELS CLEARED &middot; ' + G.score.toLocaleString() + ' PTS';
   el.winCanvas.style.display = 'block';
   el.winText.style.display = 'block';
@@ -784,14 +892,12 @@ function newGame() {
   G.score = 0; G.totalLines = 0; G.particles = [];
   Sound.init(); Sound.resume();
   startLevel(0);
-  Sound.stop(); Sound.start(LEVELS[0].tempo);
 }
 
 function retryLevel() {
   hideAll();
   G.particles = [];
   startLevel(G.level);
-  Sound.stop(); Sound.start(LEVELS[G.level].tempo);
 }
 
 /* ==================================================================
@@ -1213,7 +1319,7 @@ window.addEventListener('keydown', (e) => {
   }
   if (c === 'KeyP') {
     if (G.state === State.PLAY) { G.state = State.PAUSE; show(el.ovPause, true); Sound.stop(); }
-    else if (G.state === State.PAUSE) { G.state = State.PLAY; show(el.ovPause, false); Sound.start(LEVELS[G.level].tempo); }
+    else if (G.state === State.PAUSE) { G.state = State.PLAY; show(el.ovPause, false); Sound.start(LEVELS[G.level].tempo, G.level); }
     e.preventDefault(); return;
   }
   if (G.state === State.PAUSE) return;
@@ -1289,7 +1395,6 @@ function frame(now) {
     if (G.overlayTimer > 2.2) {
       show(el.ovLevel, false);
       startLevel(G.level + 1);
-      Sound.setTempo(LEVELS[G.level].tempo);
     }
   }
   else if (G.state === State.WIN) {
@@ -1326,7 +1431,7 @@ fitStage();
 requestAnimationFrame(frame);
 
 // expose a little of the internals so you can poke at it from devtools
-window.BLOCKFALL = { G, LEVELS, newGame, startLevel, victory, Sound };
+window.BLOCKFALL = { G, LEVELS, TRACKS, newGame, startLevel, victory, Sound };
 </script>
 </body>
 </html>
